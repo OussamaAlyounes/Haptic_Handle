@@ -60,10 +60,6 @@ ros::Publisher vibration_status("handle/vibration_status", &vibration_msg);
 ros::Publisher temperature_status("handle/temperature_status", &temperature_msg);
 ros::Publisher servo_status("handle/servo_status", &servo_msg);
 
-void vibraion_call_back(const std_msgs:String* msg) this is also correct as it is
-a pointer to the message that holds its address and we thn must use msg->data instead of
-msg.data but to pass a reference (a copy of the msg) is simpler allowing to use "."
-
 void servo_call_back(const std_msgs::Float32& msg){
   /*
   the message should be a double indicating the distance (mm) that the servo should move
@@ -73,6 +69,10 @@ void servo_call_back(const std_msgs::Float32& msg){
   servo_msg.data = msg.data;
   servo_status.publish(&servo_msg);
 }
+
+// void vibraion_call_back(const std_msgs:String* msg) this is also correct as it is
+// a pointer to the message that holds its address and we thn must use msg->data instead of
+// msg.data but to pass a reference (a copy of the msg) is simpler allowing to use "."
 
 void vibration_call_back(const std_msgs::String& msg){
   /*
