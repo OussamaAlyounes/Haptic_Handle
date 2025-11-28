@@ -45,52 +45,52 @@ int vibro_pin1 = 17;
 int vibro_pin2 = 5;
 int vibro_pin3 = 18;
 int vibro_pin4 = 19;
-// Vibros vibros(vibro_pin1, vibro_pin2, vibro_pin3, vibro_pin4);
+Vibros vibros(vibro_pin1, vibro_pin2, vibro_pin3, vibro_pin4);
 
 //// define the servo mtors
 int servo_pin1 = 22;
 int servo_pin2 = 23;
-// Servos servos(servo_pin1, servo_pin2);
+Servos servos(servo_pin1, servo_pin2);
 
 //// define a publisher
 std_msgs::String vibration_msg;
 std_msgs::String temperature_msg;
 std_msgs::Float32 servo_msg;
-// ros::Publisher vibration_status("handle/vibration_status", &vibration_msg);
+ros::Publisher vibration_status("handle/vibration_status", &vibration_msg);
 ros::Publisher temperature_status("handle/temperature_status", &temperature_msg);
-// ros::Publisher servo_status("handle/servo_status", &servo_msg);
+ros::Publisher servo_status("handle/servo_status", &servo_msg);
 
-// void vibraion_call_back(const std_msgs:String* msg) this is also correct as it is
-// a pointer to the message that holds its address and we thn must use msg->data instead of
-// msg.data but to pass a reference (a copy of the msg) is simpler allowing to use "."
+void vibraion_call_back(const std_msgs:String* msg) this is also correct as it is
+a pointer to the message that holds its address and we thn must use msg->data instead of
+msg.data but to pass a reference (a copy of the msg) is simpler allowing to use "."
 
-// void servo_call_back(const std_msgs::Float32& msg){
-//   /*
-//   the message should be a double indicating the distance (mm) that the servo should move
-//   */
-//   // servos.set_position(msg.data);
+void servo_call_back(const std_msgs::Float32& msg){
+  /*
+  the message should be a double indicating the distance (mm) that the servo should move
+  */
+  // servos.set_position(msg.data);
 
-//   servo_msg.data = msg.data;
-//   servo_status.publish(&servo_msg);
-// }
+  servo_msg.data = msg.data;
+  servo_status.publish(&servo_msg);
+}
 
-// void vibration_call_back(const std_msgs::String& msg){
-//   /*
-//   the message should be either a sequence of commands like "1001" activating the first 
-//   and the fourth vibromotors, or to be one of the patterns "LR", "UD", "CI"
-//   */ 
-//   const char* command = msg.data; // the data of the message in the rosserial library has
-//                                   // a pointer to the data insted of the data itself, just
-//                                   // in order to save the RAM (it's how rosserial is designed)
+void vibration_call_back(const std_msgs::String& msg){
+  /*
+  the message should be either a sequence of commands like "1001" activating the first 
+  and the fourth vibromotors, or to be one of the patterns "LR", "UD", "CI"
+  */ 
+  const char* command = msg.data; // the data of the message in the rosserial library has
+                                  // a pointer to the data insted of the data itself, just
+                                  // in order to save the RAM (it's how rosserial is designed)
   
-//   vibros.set_vibration(command);
-//   // String test = String(vibros.state_counter);
-//   // publish that vibration was received
-//   // vibration_msg.data = test.c_str();
-//   String test = String(vibros.time_change_vibration);
-//   vibration_msg.data = test.c_str();
-//   vibration_status.publish(&vibration_msg);
-// }
+  vibros.set_vibration(command);
+  // String test = String(vibros.state_counter);
+  // publish that vibration was received
+  // vibration_msg.data = test.c_str();
+  String test = String(vibros.time_change_vibration);
+  vibration_msg.data = test.c_str();
+  vibration_status.publish(&vibration_msg);
+}
 
 void temperature_call_back(const std_msgs::String& msg){
   /*
@@ -117,9 +117,9 @@ void temperature_call_back(const std_msgs::String& msg){
 ros::NodeHandle_<ArduinoHardware, 25, 25, 512, 512> nh; // the declaration in this way is better as the buffer size
                                                         // gets bigger to 512 and only with this we can listen
                                                         // to this topics published
-// // define 3 subscribers (servos, vibros, peltiers)
-// ros::Subscriber<std_msgs::Float32> servo_cmd("handle/servo_distance", &servo_call_back);
-// ros::Subscriber<std_msgs::String> vibration_cmd("handle/vibration_pattern", &vibration_call_back);
+// define 3 subscribers (servos, vibros, peltiers)
+ros::Subscriber<std_msgs::Float32> servo_cmd("handle/servo_distance", &servo_call_back);
+ros::Subscriber<std_msgs::String> vibration_cmd("handle/vibration_pattern", &vibration_call_back);
 ros::Subscriber<std_msgs::String> temperature_cmd("handle/temperature_pattern", &temperature_call_back);
 
 void setup() {
@@ -133,19 +133,19 @@ void setup() {
 
   // initialize all pins of each object
   // for(int i=0; i<10; i++)Serial.print(0);
-  // servos.begin();
+  servos.begin();
   // for(int i=0; i<10; i++)Serial.print(1);
-  // vibros.begin();
+  vibros.begin();
   // for(int i=0; i<10; i++)Serial.print(2);
   peltier_cells.begin();
   // for(int i=0; i<10; i++)Serial.print(3);
   
   // initializing the subscribers and publishers
-  // nh.subscribe(servo_cmd);
-  // nh.subscribe(vibration_cmd);
+  nh.subscribe(servo_cmd);
+  nh.subscribe(vibration_cmd);
   nh.subscribe(temperature_cmd);
-  // nh.advertise(servo_status);
-  // nh.advertise(vibration_status);
+  nh.advertise(servo_status);
+  nh.advertise(vibration_status);
   nh.advertise(temperature_status);
 }
 
@@ -155,13 +155,9 @@ void loop() {
   nh.spinOnce();
   // check on the status of the actutor so that each command is actuated for a specific time, and to keep the 
   // temperature closed loop working fine
-  // vibros.run();
+  vibros.run();
   peltier_cells.run();
   delay(10);
   Serial.println(10);
 
-  // String test = String(vibros.time_change_vibration);
-  // vibration_msg.data = test.c_str();
-  // vibration_status.publish(&vibration_msg);
-  
 }
